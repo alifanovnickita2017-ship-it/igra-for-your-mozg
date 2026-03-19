@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра с таблицей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        .info {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #555;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .timer.warning {
+            color: #ff9800;
+            animation: pulse 0.5s infinite;
+        }
+        
+        .timer.danger {
+            color: #f44336;
+            animation: pulse 0.3s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .table {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .cell {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #fff;
+            border: 3px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cell:hover {
+            transform: scale(1.05);
+            background-color: #f5f5f5;
+        }
+        
+        .cell.correct {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #2E7D32;
+        }
+        
+        .cell.wrong {
+            background-color: #f44336;
+            color: white;
+            border-color: #c62828;
+        }
+        
+        .cell.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Найди числа по порядку!</h1>
+    <div class="info">
+        <div>Сейчас нужно нажать на число: <strong id="target">1</strong></div>
+        <div class="timer" id="timer">⏱️ 30</div>
+    </div>
+    <button onclick="shuffleTable()">🔄 Поменять порядок</button>
+    <div class="table" id="table"></div>
+
+    <script>
+        let numbers = [];
+        let currentTarget = 1;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let gameActive = false;
+
+        // Создаём массив чисел от 1 до 30
+        function createNumbers() {
+            numbers = [];
+            for (let i = 1; i <= 30; i++) {
+                numbers.push(i);
+            }
+        }
+
+        // Перемешиваем массив (алгоритм Фишера-Йетса)
+        function shuffleArray() {
+            for (let i = numbers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+            }
+        }
+
+        // Создаём таблицу
+        function createTable() {
+            const table = document.getElementById('table');
+            table.innerHTML = '';
+            
+            numbers.forEach(num => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = num;
+                cell.onclick = () => clickNumber(num, cell);
+                table.appendChild(cell);
+            });
+        }
+
+        // Запуск таймера
+        function startTimer() {
+            // Очищаем предыдущий таймер если есть
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timeLeft = 30;
+            gameActive = true;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    timeIsUp();
+                }
+            }, 1000);
+        }
+
+        // Обновление отображения таймера
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = `⏱️ ${timeLeft}`;
+            
+            // Меняем цвет в зависимости от времени
+            timerElement.classList.remove('warning', 'danger');
+            if (timeLeft <= 5) {
+                timerElement.classList.add('danger');
+            } else if (timeLeft <= 10) {
+                timerElement.classList.add('warning');
+            }
+        }
+
+        // Время вышло
+        function timeIsUp() {
+            clearInterval(timerInterval);
+            gameActive = false;
+            
+            // Показываем сообщение
+            setTimeout(() => {
+                alert('⏰ Время вышло! Попробуйте ещё раз!');
+                // Перемешиваем и начинаем заново
+                shuffleTable();
+            }, 100);
+        }
+
+        // Остановка таймера
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            gameActive = false;
+        }
+
+        // Обработка клика по числу
+        function clickNumber(num, cell) {
+            // Если игра не активна или уже нажато правильно - игнорируем
+            if (!gameActive || cell.classList.contains('correct') || cell.classList.contains('disabled')) {
+                return;
+            }
+            
+            if (num === currentTarget) {
+                // Правильно!
+                cell.classList.add('correct');
+                cell.classList.add('disabled');
+                currentTarget++;
+                document.getElementById('target').textContent = currentTarget;
+                
+                // Проверка победы
+                if (currentTarget > 30) {
+                    stopTimer();
+                    setTimeout(() => {
+                        alert(`🎉 Поздравляю! Вы нашли все числа за ${30 - timeLeft} секунд!`);
+                    }, 300);
+                }
+            } else {
+                // Неправильно!
+                cell.classList.add('wrong');
+                setTimeout(() => {
+                    cell.classList.remove('wrong');
+                }, 500);
+            }
+        }
+
+        // Кнопка "Поменять порядок"
+        function shuffleTable() {
+            stopTimer();
+            createNumbers();
+            shuffleArray();
+            currentTarget = 1;
+            document.getElementById('target').textContent = currentTarget;
+            createTable();
+            startTimer();
+        }
+
+        // Запуск при загрузке
+        shuffleTable();
+    </script>
+</body>
+</html>
