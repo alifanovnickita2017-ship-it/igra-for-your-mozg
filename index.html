@@ -107,6 +107,10 @@
             color: #1a1a2e;
         }
         
+        #leaderboardBtn {
+            background-color: #FF9800;
+        }
+        
         .table {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -187,6 +191,118 @@
             pointer-events: none;
         }
         
+        /* Таблица рекордов */
+        .leaderboard-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .leaderboard-modal.show {
+            display: flex;
+        }
+        
+        .leaderboard-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        body.dark .leaderboard-content {
+            background-color: #16213e;
+        }
+        
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .leaderboard-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        body.dark .leaderboard-header h2 {
+            color: #eee;
+        }
+        
+        .close-btn {
+            background: #f44336;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.dark .leaderboard-item {
+            background-color: #0f3460;
+        }
+        
+        .leaderboard-item:nth-child(1) {
+            background-color: #FFD700;
+            color: #333;
+        }
+        
+        .leaderboard-item:nth-child(2) {
+            background-color: #C0C0C0;
+            color: #333;
+        }
+        
+        .leaderboard-item:nth-child(3) {
+            background-color: #CD7F32;
+            color: #333;
+        }
+        
+        .leaderboard-rank {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .leaderboard-time {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .no-records {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+        
+        .clear-btn {
+            background-color: #f44336;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
         /* Адаптация для маленьких экранов */
         @media (max-width: 480px) {
             body {
@@ -221,9 +337,16 @@
                 min-height: 45px;
                 border-width: 2px;
             }
+            
+            .leaderboard-content {
+                padding: 15px;
+            }
+            
+            .leaderboard-header h2 {
+                font-size: 16px;
+            }
         }
         
-        /* Для очень маленьких экранов */
         @media (max-width: 360px) {
             .cell {
                 font-size: 14px;
@@ -243,10 +366,25 @@
         <div class="timer" id="timer">⏱️ 30</div>
     </div>
     <div class="buttons">
-        <button onclick="shuffleTable()">🔄 Поменять порядок</button>
+        <button onclick="shuffleTable()">🔄 Заново</button>
         <button id="themeBtn" onclick="toggleTheme()">🌙 Тёмная тема</button>
+        <button id="leaderboardBtn" onclick="showLeaderboard()">🏆 Рекорды</button>
     </div>
     <div class="table" id="table"></div>
+
+    <!-- Таблица рекордов -->
+    <div class="leaderboard-modal" id="leaderboardModal">
+        <div class="leaderboard-content">
+            <div class="leaderboard-header">
+                <h2>🏆 Таблица рекордов</h2>
+                <button class="close-btn" onclick="hideLeaderboard()">✕ Закрыть</button>
+            </div>
+            <ul class="leaderboard-list" id="leaderboardList">
+                <!-- Сюда добавляются рекорды -->
+            </ul>
+            <button class="clear-btn" onclick="clearLeaderboard()">🗑️ Очистить рекорды</button>
+        </div>
+    </div>
 
     <script>
         let numbers = [];
@@ -254,6 +392,8 @@
         let timeLeft = 30;
         let timerInterval = null;
         let gameActive = false;
+        let startTime = null;
+        let elapsedTime = 0;
 
         // Загрузка сохранённой темы
         if (localStorage.getItem('darkTheme') === 'true') {
@@ -299,10 +439,13 @@
             
             timeLeft = 30;
             gameActive = true;
+            startTime = Date.now();
+            elapsedTime = 0;
             updateTimerDisplay();
             
             timerInterval = setInterval(() => {
                 timeLeft--;
+                elapsedTime = Math.floor((Date.now() - startTime) / 1000);
                 updateTimerDisplay();
                 
                 if (timeLeft <= 0) {
@@ -354,8 +497,10 @@
                 
                 if (currentTarget > 30) {
                     stopTimer();
+                    const finalTime = elapsedTime;
+                    saveRecord(finalTime);
                     setTimeout(() => {
-                        alert(`🎉 Поздравляю! Вы нашли все числа за ${30 - timeLeft} секунд!`);
+                        alert(`🎉 Поздравляю! Вы нашли все числа за ${finalTime} секунд!`);
                     }, 300);
                 }
             } else {
@@ -382,6 +527,70 @@
             localStorage.setItem('darkTheme', isDark);
             document.getElementById('themeBtn').textContent = isDark ? '☀️ Светлая тема' : '🌙 Тёмная тема';
         }
+
+        // ===== ТАБЛИЦА РЕКОРДОВ =====
+        
+        function getRecords() {
+            const records = localStorage.getItem('gameRecords');
+            return records ? JSON.parse(records) : [];
+        }
+
+        function saveRecord(time) {
+            const records = getRecords();
+            const date = new Date().toLocaleDateString('ru-RU');
+            records.push({ time, date });
+            
+            // Сортируем по времени (лучшие первыми)
+            records.sort((a, b) => a.time - b.time);
+            
+            // Храним только топ-10
+            records.splice(10);
+            
+            localStorage.setItem('gameRecords', JSON.stringify(records));
+        }
+
+        function showLeaderboard() {
+            const modal = document.getElementById('leaderboardModal');
+            const list = document.getElementById('leaderboardList');
+            const records = getRecords();
+            
+            list.innerHTML = '';
+            
+            if (records.length === 0) {
+                list.innerHTML = '<li class="no-records">Пока нет рекордов.<br>Пройдите игру!</li>';
+            } else {
+                records.forEach((record, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'leaderboard-item';
+                    li.innerHTML = `
+                        <span><span class="leaderboard-rank">#${index + 1}</span> ${record.date}</span>
+                        <span class="leaderboard-time">${record.time} сек</span>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+            
+            modal.classList.add('show');
+        }
+
+        function hideLeaderboard() {
+            const modal = document.getElementById('leaderboardModal');
+            modal.classList.remove('show');
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Удалить все рекорды?')) {
+                localStorage.removeItem('gameRecords');
+                showLeaderboard();
+            }
+        }
+
+        // Закрытие по клику вне окна
+        document.getElementById('leaderboardModal').addEventListener('click', (e) => {
+            if (e.target.id === 'leaderboardModal') {
+                hideLeaderboard();
+            }
+        });
 
         shuffleTable();
     </script>
