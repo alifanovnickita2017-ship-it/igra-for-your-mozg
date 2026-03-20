@@ -414,8 +414,9 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `time=${time}&name=${encodeURIComponent(playerNickname)}`
                 });
+                console.log('✅ Отправлено в Google Sheets');
             } catch (err) {
-                console.warn('Не удалось отправить в Google:', err);
+                console.warn('⚠️ Не удалось отправить в Google:', err);
             }
         }
         
@@ -424,6 +425,7 @@
             const best = localStorage.getItem(key);
             if (!best || time < parseInt(best)) {
                 localStorage.setItem(key, time);
+                console.log('💾 Локальный рекорд сохранён:', playerNickname, time);
             }
         }
 
@@ -435,27 +437,28 @@
             modal.classList.add('show');
             
             let records = [];
+            let fromGoogle = false;
             
-            // Пытаемся загрузить из Google
             try {
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 5000);
                 const response = await fetch(GOOGLE_SCRIPT_URL, { signal: controller.signal });
                 clearTimeout(timeout);
                 const data = await response.json();
+                console.log('📡 Google данные:', data);
                 if (data.result === 'success' && data.records?.length > 0) {
                     records = data.records.map(r => ({ name: r.name || 'Аноним', time: parseFloat(r.time) }));
+                    fromGoogle = true;
                 }
             } catch (error) {
-                console.warn('Google не доступен, используем локальные:', error);
+                console.warn('⚠️ Google не доступен:', error);
             }
             
-            // Если Google не сработал — берём локальные
-            if (records.length === 0) {
+            if (!fromGoogle || records.length === 0) {
+                console.log('📁 Используем локальные рекорды');
                 records = getLocalRecords();
             }
             
-            // Группируем: для каждого ника только лучший результат
             const bestRecords = {};
             records.forEach(r => {
                 const name = r.name || 'Аноним';
@@ -465,7 +468,6 @@
                 }
             });
             
-            // Сортируем и показываем
             const sorted = Object.values(bestRecords).sort((a, b) => a.time - b.time).slice(0, 50);
             
             if (sorted.length > 0) {
@@ -485,8 +487,6 @@
             } else {
                 list.innerHTML = '<li class="no-records">Пока нет рекордов.<br>Станьте первым!</li>';
             }
-            
-            // ⚠️ ВАЖНО: Никакого prompt() здесь! Кнопка очистки просто видна
         }
         
         function getLocalRecords() {
@@ -499,6 +499,7 @@
                     records.push({ name, time: parseInt(time) });
                 }
             }
+            console.log('📋 Локальные рекорды:', records);
             return records;
         }
 
@@ -507,21 +508,31 @@
         }
 
         function clearLeaderboard() {
-            // ⚠️ ВОТ ЗДЕСЬ спрашиваем код - только при нажатии на очистку!
+            console.log('🔍 Очистка рекордов...');
             const secret = prompt('🔐 Введите код создателя:');
+            console.log('Введённый код:', secret);
+            console.log('Правильный код:', CREATOR_SECRET);
+            
             if (secret === CREATOR_SECRET) {
-                if (confirm('⚠️ Удалить ВСЕ рекорды?')) {
+                console.log('✅ Код верный');
+                if (confirm('⚠️ Удалить ВСЕ рекорды?\n\n📱 Локальные рекорды будут удалены.\n📊 Рекорды в Google Таблице нужно удалять вручную.\n\nПродолжить?')) {
+                    let deleted = 0;
                     for (let i = localStorage.length - 1; i >= 0; i--) {
                         const key = localStorage.key(i);
+                        console.log('Проверка ключа:', key);
                         if (key && key.startsWith('onlineLeaderboard_')) {
                             localStorage.removeItem(key);
+                            deleted++;
+                            console.log('✅ Удалён:', key);
                         }
                     }
-                    alert('✅ Локальные рекорды удалены.');
+                    console.log('Всего удалено:', deleted);
+                    alert('✅ Удалено локальных рекордов: ' + deleted + '\n\n📊 Для очистки Google Таблицы:\n1. Откройте вашу таблицу Google Sheets\n2. Удалите данные вручную (кроме заголовков)');
                     showLeaderboard();
                 }
             } else {
-                alert('❌ Неверный код!');
+                console.log('❌ Код неверный');
+                alert('❌ Неверный код!\nПравильный код: ' + CREATOR_SECRET);
             }
         }
 
