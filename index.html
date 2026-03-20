@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Игра с таблицей</title>
     <style>
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -21,23 +17,9 @@
             max-width: 100vw;
             transition: background-color 0.3s, color 0.3s;
         }
-        
-        body.dark {
-            background-color: #1a1a2e;
-            color: #eee;
-        }
-        
-        h1 {
-            color: #333;
-            font-size: 20px;
-            margin: 10px 0;
-            text-align: center;
-        }
-        
-        body.dark h1 {
-            color: #eee;
-        }
-        
+        body.dark { background-color: #1a1a2e; color: #eee; }
+        h1 { color: #333; font-size: 20px; margin: 10px 0; text-align: center; }
+        body.dark h1 { color: #eee; }
         .info {
             margin-bottom: 15px;
             font-size: 16px;
@@ -48,40 +30,12 @@
             justify-content: center;
             text-align: center;
         }
-        
-        body.dark .info {
-            color: #bbb;
-        }
-        
-        .timer {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2196F3;
-        }
-        
-        .timer.warning {
-            color: #ff9800;
-            animation: pulse 0.5s infinite;
-        }
-        
-        .timer.danger {
-            color: #f44336;
-            animation: pulse 0.3s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
+        body.dark .info { color: #bbb; }
+        .timer { font-size: 20px; font-weight: bold; color: #2196F3; }
+        .timer.warning { color: #ff9800; animation: pulse 0.5s infinite; }
+        .timer.danger { color: #f44336; animation: pulse 0.3s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
         button {
             padding: 12px 24px;
             font-size: 14px;
@@ -93,24 +47,11 @@
             touch-action: manipulation;
             transition: all 0.2s;
         }
-        
-        button:active {
-            transform: scale(0.95);
-        }
-        
-        #themeBtn {
-            background-color: #607D8B;
-        }
-        
-        body.dark #themeBtn {
-            background-color: #FFB300;
-            color: #1a1a2e;
-        }
-        
-        #leaderboardBtn {
-            background-color: #FF9800;
-        }
-        
+        button:active { transform: scale(0.95); }
+        #themeBtn { background-color: #607D8B; }
+        body.dark #themeBtn { background-color: #FFB300; color: #1a1a2e; }
+        #leaderboardBtn { background-color: #FF9800; }
+        #settingsBtn { background-color: #9C27B0; }
         .table {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -123,12 +64,7 @@
             max-width: 400px;
             transition: background-color 0.3s;
         }
-        
-        body.dark .table {
-            background-color: #16213e;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        
+        body.dark .table { background-color: #16213e; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
         .cell {
             aspect-ratio: 1;
             display: flex;
@@ -147,88 +83,76 @@
             -webkit-user-select: none;
             color: #333;
         }
+        body.dark .cell { background-color: #0f3460; border-color: #e94560; color: #eee; }
+        .cell:active { transform: scale(0.9); background-color: #f5f5f5; }
+        body.dark .cell:active { background-color: #1a4a7a; }
+        .cell.correct { background-color: #4CAF50; color: white; border-color: #2E7D32; }
+        body.dark .cell.correct { background-color: #00C853; border-color: #009624; }
+        .cell.wrong { background-color: #f44336; color: white; border-color: #c62828; }
+        body.dark .cell.wrong { background-color: #ff5252; border-color: #d32f2f; }
+        .cell.disabled { cursor: not-allowed; opacity: 0.6; pointer-events: none; }
         
-        body.dark .cell {
-            background-color: #0f3460;
-            border-color: #e94560;
-            color: #eee;
-        }
-        
-        .cell:active {
-            transform: scale(0.9);
-            background-color: #f5f5f5;
-        }
-        
-        body.dark .cell:active {
-            background-color: #1a4a7a;
-        }
-        
-        .cell.correct {
-            background-color: #4CAF50;
-            color: white;
-            border-color: #2E7D32;
-        }
-        
-        body.dark .cell.correct {
-            background-color: #00C853;
-            border-color: #009624;
-        }
-        
-        .cell.wrong {
-            background-color: #f44336;
-            color: white;
-            border-color: #c62828;
-        }
-        
-        body.dark .cell.wrong {
-            background-color: #ff5252;
-            border-color: #d32f2f;
-        }
-        
-        .cell.disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        
-        .name-input {
+        /* Модальные окна */
+        .modal {
             display: none;
-            margin: 10px 0;
-            padding: 10px;
-            border: 2px solid #333;
-            border-radius: 5px;
-            font-size: 14px;
-            width: 100%;
-            max-width: 400px;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
         }
-        
-        body.dark .name-input {
+        .modal.show { display: flex; }
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
+        }
+        body.dark .modal-content { background-color: #16213e; }
+        .modal-content h3 { margin: 0 0 15px 0; color: #333; }
+        body.dark .modal-content h3 { color: #eee; }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        body.dark .modal-content input {
             background-color: #0f3460;
             color: #eee;
             border-color: #e94560;
         }
-        
-        .name-input.show {
-            display: block;
+        .modal-content button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+        .modal-content .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
         }
         
+        /* Таблица рекордов */
         .leaderboard-modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        
-        .leaderboard-modal.show {
-            display: flex;
-        }
-        
+        .leaderboard-modal.show { display: flex; }
         .leaderboard-content {
             background-color: white;
             padding: 20px;
@@ -238,40 +162,17 @@
             overflow-y: auto;
             position: relative;
         }
-        
-        body.dark .leaderboard-content {
-            background-color: #16213e;
-        }
-        
+        body.dark .leaderboard-content { background-color: #16213e; }
         .leaderboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
-        .leaderboard-header h2 {
-            margin: 0;
-            color: #333;
-            font-size: 18px;
-        }
-        
-        body.dark .leaderboard-header h2 {
-            color: #eee;
-        }
-        
-        .close-btn {
-            background: #f44336;
-            padding: 8px 16px;
-            font-size: 12px;
-        }
-        
-        .leaderboard-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
+        .leaderboard-header h2 { margin: 0; color: #333; font-size: 18px; }
+        body.dark .leaderboard-header h2 { color: #eee; }
+        .close-btn { background: #f44336; padding: 8px 16px; font-size: 12px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
@@ -281,111 +182,40 @@
             border-radius: 8px;
             font-size: 14px;
         }
-        
-        body.dark .leaderboard-item {
-            background-color: #0f3460;
+        body.dark .leaderboard-item { background-color: #0f3460; }
+        .leaderboard-item:nth-child(1) { background-color: #FFD700; color: #333; }
+        .leaderboard-item:nth-child(2) { background-color: #C0C0C0; color: #333; }
+        .leaderboard-item:nth-child(3) { background-color: #CD7F32; color: #333; }
+        .leaderboard-item.you {
+            border: 2px solid #4CAF50;
+            background-color: #E8F5E9 !important;
         }
-        
-        .leaderboard-item:nth-child(1) {
-            background-color: #FFD700;
-            color: #333;
+        body.dark .leaderboard-item.you {
+            background-color: #1B5E20 !important;
         }
-        
-        .leaderboard-item:nth-child(2) {
-            background-color: #C0C0C0;
-            color: #333;
-        }
-        
-        .leaderboard-item:nth-child(3) {
-            background-color: #CD7F32;
-            color: #333;
-        }
-        
-        .leaderboard-rank {
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        
-        .leaderboard-time {
-            font-weight: bold;
-            color: #4CAF50;
-        }
-        
-        .no-records {
-            text-align: center;
-            color: #888;
-            padding: 20px;
-        }
-        
-        .loading {
-            text-align: center;
-            color: #2196F3;
-            padding: 20px;
-        }
-        
-        .clear-btn {
-            background-color: #f44336;
-            margin-top: 15px;
-            width: 100%;
-            display: none;
-        }
-        
-        .clear-btn.show {
-            display: block;
-        }
+        .leaderboard-rank { font-weight: bold; margin-right: 10px; }
+        .leaderboard-time { font-weight: bold; color: #4CAF50; }
+        .leaderboard-name { color: #2196F3; font-weight: 500; }
+        .no-records { text-align: center; color: #888; padding: 20px; }
+        .loading { text-align: center; color: #2196F3; padding: 20px; }
+        .clear-btn { background-color: #f44336; margin-top: 15px; width: 100%; display: none; }
+        .clear-btn.show { display: block; }
         
         @media (max-width: 480px) {
-            body {
-                padding: 5px;
-            }
-            
-            h1 {
-                font-size: 16px;
-            }
-            
-            .info {
-                font-size: 14px;
-                gap: 10px;
-            }
-            
-            .timer {
-                font-size: 18px;
-            }
-            
-            button {
-                padding: 10px 20px;
-                font-size: 13px;
-            }
-            
-            .table {
-                gap: 4px;
-                padding: 8px;
-            }
-            
-            .cell {
-                font-size: 16px;
-                min-height: 45px;
-                border-width: 2px;
-            }
-            
-            .leaderboard-content {
-                padding: 15px;
-            }
-            
-            .leaderboard-header h2 {
-                font-size: 16px;
-            }
+            body { padding: 5px; }
+            h1 { font-size: 16px; }
+            .info { font-size: 14px; gap: 10px; }
+            .timer { font-size: 18px; }
+            button { padding: 10px 20px; font-size: 13px; }
+            .table { gap: 4px; padding: 8px; }
+            .cell { font-size: 16px; min-height: 45px; border-width: 2px; }
+            .leaderboard-content { padding: 15px; }
+            .leaderboard-header h2 { font-size: 16px; }
+            .modal-content { width: 90%; padding: 20px; }
         }
-        
         @media (max-width: 360px) {
-            .cell {
-                font-size: 14px;
-                min-height: 40px;
-            }
-            
-            .info {
-                font-size: 13px;
-            }
+            .cell { font-size: 14px; min-height: 40px; }
+            .info { font-size: 13px; }
         }
     </style>
 </head>
@@ -399,28 +229,51 @@
         <button onclick="shuffleTable()">🔄 Заново</button>
         <button id="themeBtn" onclick="toggleTheme()">🌙 Тёмная тема</button>
         <button id="leaderboardBtn" onclick="showLeaderboard()">🏆 Рекорды</button>
+        <button id="settingsBtn" onclick="showSettings()">⚙️ Ник</button>
     </div>
-    
-    <input type="text" id="nameInput" class="name-input" placeholder="Введите ваше имя для рекорда" maxlength="15">
-    
     <div class="table" id="table"></div>
 
+    <!-- Модальное окно: ввод никнейма -->
+    <div class="modal" id="nicknameModal">
+        <div class="modal-content">
+            <h3>👋 Привет! Введите ваш никнейм</h3>
+            <input type="text" id="nicknameInput" placeholder="Ваш ник" maxlength="15" autocomplete="off">
+            <button onclick="saveNickname()">✅ Начать игру</button>
+            <div class="hint">Ник сохранится для будущих игр</div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: настройки -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h3>⚙️ Настройки</h3>
+            <p>Ваш ник: <strong id="currentNickname">-</strong></p>
+            <input type="text" id="newNicknameInput" placeholder="Новый ник" maxlength="15">
+            <button onclick="updateNickname()">💾 Сохранить ник</button>
+            <button onclick="hideSettings()" style="background-color:#607D8B;margin-top:5px">✕ Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Таблица рекордов -->
     <div class="leaderboard-modal" id="leaderboardModal">
         <div class="leaderboard-content">
             <div class="leaderboard-header">
-                <h2>🏆 Таблица рекордов</h2>
+                <h2>🏆 Лучшие результаты</h2>
                 <button class="close-btn" onclick="hideLeaderboard()">✕ Закрыть</button>
             </div>
-            <ul class="leaderboard-list" id="leaderboardList">
-            </ul>
+            <ul class="leaderboard-list" id="leaderboardList"></ul>
             <button class="clear-btn" id="clearBtn" onclick="clearLeaderboard()">🗑️ Очистить все рекорды</button>
         </div>
     </div>
 
     <script>
+        // 🔗 Ваш URL из Google Apps Script
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRMK4EeoCf7Vj-pJlXpwpYVRe8nZoDpJ3hPSlbLlrHMUJNuSxibUZ8pUM3ds9-F23bkQ/exec';
+        
+        // 🔑 Секретный код создателя (можете изменить)
         const CREATOR_SECRET = 'admin2024';
         
+        // Переменные игры
         let numbers = [];
         let currentTarget = 1;
         let timeLeft = 30;
@@ -428,18 +281,94 @@
         let gameActive = false;
         let startTime = null;
         let elapsedTime = 0;
-        let pendingRecord = null;
+        let playerNickname = null;
 
-        if (localStorage.getItem('darkTheme') === 'true') {
-            document.body.classList.add('dark');
-            document.getElementById('themeBtn').textContent = '☀️ Светлая тема';
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        
+        function init() {
+            // Загрузка темы
+            if (localStorage.getItem('darkTheme') === 'true') {
+                document.body.classList.add('dark');
+                document.getElementById('themeBtn').textContent = '☀️ Светлая тема';
+            }
+            
+            // Загрузка никнейма
+            playerNickname = localStorage.getItem('playerNickname');
+            
+            if (!playerNickname) {
+                // Первый запуск — просим ник
+                showNicknameModal();
+            } else {
+                // Ник уже есть — запускаем игру
+                document.getElementById('currentNickname').textContent = playerNickname;
+                shuffleTable();
+            }
         }
 
+        // ===== НИКНЕЙМ =====
+        
+        function showNicknameModal() {
+            const modal = document.getElementById('nicknameModal');
+            const input = document.getElementById('nicknameInput');
+            modal.classList.add('show');
+            input.focus();
+            
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') saveNickname();
+            };
+        }
+
+        function saveNickname() {
+            const input = document.getElementById('nicknameInput');
+            let nickname = input.value.trim();
+            
+            if (!nickname) {
+                nickname = 'Аноним' + Math.floor(Math.random() * 1000);
+            }
+            
+            // Очистка от спецсимволов
+            nickname = nickname.replace(/[^a-zA-Zа-яА-Я0-9_\s]/g, '').slice(0, 15);
+            
+            localStorage.setItem('playerNickname', nickname);
+            playerNickname = nickname;
+            document.getElementById('currentNickname').textContent = nickname;
+            
+            document.getElementById('nicknameModal').classList.remove('show');
+            shuffleTable();
+        }
+
+        function showSettings() {
+            document.getElementById('newNicknameInput').value = playerNickname || '';
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function hideSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function updateNickname() {
+            const input = document.getElementById('newNicknameInput');
+            let nickname = input.value.trim();
+            
+            if (!nickname) {
+                alert('Ник не может быть пустым!');
+                return;
+            }
+            
+            nickname = nickname.replace(/[^a-zA-Zа-яА-Я0-9_\s]/g, '').slice(0, 15);
+            localStorage.setItem('playerNickname', nickname);
+            playerNickname = nickname;
+            document.getElementById('currentNickname').textContent = nickname;
+            
+            hideSettings();
+            alert(`✅ Ник изменён на "${nickname}"`);
+        }
+
+        // ===== ИГРА =====
+        
         function createNumbers() {
             numbers = [];
-            for (let i = 1; i <= 30; i++) {
-                numbers.push(i);
-            }
+            for (let i = 1; i <= 30; i++) numbers.push(i);
         }
 
         function shuffleArray() {
@@ -452,58 +381,42 @@
         function createTable() {
             const table = document.getElementById('table');
             table.innerHTML = '';
-            
             numbers.forEach(num => {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.textContent = num;
                 cell.onclick = () => clickNumber(num, cell);
-                cell.ontouchstart = (e) => {
-                    e.preventDefault();
-                    clickNumber(num, cell);
-                };
+                cell.ontouchstart = (e) => { e.preventDefault(); clickNumber(num, cell); };
                 table.appendChild(cell);
             });
         }
 
         function startTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-            
+            if (timerInterval) clearInterval(timerInterval);
             timeLeft = 30;
             gameActive = true;
             startTime = Date.now();
             elapsedTime = 0;
             updateTimerDisplay();
-            
             timerInterval = setInterval(() => {
                 timeLeft--;
                 elapsedTime = Math.floor((Date.now() - startTime) / 1000);
                 updateTimerDisplay();
-                
-                if (timeLeft <= 0) {
-                    timeIsUp();
-                }
+                if (timeLeft <= 0) timeIsUp();
             }, 1000);
         }
 
         function updateTimerDisplay() {
-            const timerElement = document.getElementById('timer');
-            timerElement.textContent = `⏱️ ${timeLeft}`;
-            
-            timerElement.classList.remove('warning', 'danger');
-            if (timeLeft <= 5) {
-                timerElement.classList.add('danger');
-            } else if (timeLeft <= 10) {
-                timerElement.classList.add('warning');
-            }
+            const el = document.getElementById('timer');
+            el.textContent = `⏱️ ${timeLeft}`;
+            el.classList.remove('warning', 'danger');
+            if (timeLeft <= 5) el.classList.add('danger');
+            else if (timeLeft <= 10) el.classList.add('warning');
         }
 
         function timeIsUp() {
             clearInterval(timerInterval);
             gameActive = false;
-            
             setTimeout(() => {
                 alert('⏰ Время вышло! Попробуйте ещё раз!');
                 shuffleTable();
@@ -511,35 +424,36 @@
         }
 
         function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             gameActive = false;
         }
 
         function clickNumber(num, cell) {
-            if (!gameActive || cell.classList.contains('correct') || cell.classList.contains('disabled')) {
-                return;
-            }
+            if (!gameActive || cell.classList.contains('correct') || cell.classList.contains('disabled')) return;
             
             if (num === currentTarget) {
-                cell.classList.add('correct');
-                cell.classList.add('disabled');
+                cell.classList.add('correct', 'disabled');
                 currentTarget++;
                 document.getElementById('target').textContent = currentTarget;
                 
                 if (currentTarget > 30) {
                     stopTimer();
-                    pendingRecord = elapsedTime;
-                    showNameInput();
+                    handleWin();
                 }
             } else {
                 cell.classList.add('wrong');
-                setTimeout(() => {
-                    cell.classList.remove('wrong');
-                }, 500);
+                setTimeout(() => cell.classList.remove('wrong'), 500);
             }
+        }
+
+        function handleWin() {
+            // Автосохранение рекорда
+            saveRecordToGoogle(elapsedTime);
+            
+            // Поздравление
+            setTimeout(() => {
+                alert(`🎉 ${playerNickname}, вы прошли игру за ${elapsedTime} сек!`);
+            }, 300);
         }
 
         function shuffleTable() {
@@ -559,42 +473,20 @@
             document.getElementById('themeBtn').textContent = isDark ? '☀️ Светлая тема' : '🌙 Тёмная тема';
         }
 
-        function showNameInput() {
-            const input = document.getElementById('nameInput');
-            input.classList.add('show');
-            input.focus();
-            
-            input.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    saveRecordToGoogle();
-                }
-            };
-            
-            setTimeout(() => {
-                if (input.classList.contains('show')) {
-                    const name = input.value.trim() || 'Аноним';
-                    saveRecordToGoogle(name);
-                }
-            }, 10000);
-        }
-
-        function saveRecordToGoogle(name = null) {
-            const input = document.getElementById('nameInput');
-            const playerName = name || input.value.trim() || 'Аноним';
-            
-            input.classList.remove('show');
-            input.value = '';
-            
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `time=${pendingRecord}&name=${encodeURIComponent(playerName)}`
-            }).catch(err => console.error('Ошибка:', err));
-            
-            pendingRecord = null;
+        // ===== РЕКОРДЫ =====
+        
+        async function saveRecordToGoogle(time) {
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `time=${time}&name=${encodeURIComponent(playerNickname)}`
+                });
+                console.log('✅ Рекорд сохранён');
+            } catch (err) {
+                console.error('❌ Ошибка сохранения:', err);
+            }
         }
 
         async function showLeaderboard() {
@@ -610,19 +502,36 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
                 
-                if (data.result === 'success' && data.records && data.records.length > 0) {
+                if (data.result === 'success' && data.records?.length > 0) {
+                    // Группируем: для каждого ника оставляем только лучший результат
+                    const bestRecords = {};
+                    data.records.forEach(r => {
+                        const name = r.name || 'Аноним';
+                        const time = parseFloat(r.time);
+                        if (!bestRecords[name] || time < bestRecords[name].time) {
+                            bestRecords[name] = { name, time };
+                        }
+                    });
+                    
+                    // Сортируем по времени
+                    const sorted = Object.values(bestRecords).sort((a, b) => a.time - b.time).slice(0, 50);
+                    
                     list.innerHTML = '';
-                    data.records.forEach((record, index) => {
+                    sorted.forEach((record, index) => {
                         const li = document.createElement('li');
-                        li.className = 'leaderboard-item';
+                        li.className = 'leaderboard-item' + (record.name === playerNickname ? ' you' : '');
                         li.innerHTML = `
-                            <span><span class="leaderboard-rank">#${index + 1}</span> ${record.name || 'Аноним'}</span>
+                            <span>
+                                <span class="leaderboard-rank">#${index + 1}</span>
+                                <span class="leaderboard-name">${record.name}${record.name === playerNickname ? ' (вы)' : ''}</span>
+                            </span>
                             <span class="leaderboard-time">${record.time} сек</span>
                         `;
                         list.appendChild(li);
                     });
                     
-                    const secret = prompt('Введите секретный код создателя (или отмена):');
+                    // Кнопка очистки только для создателя
+                    const secret = prompt('Код создателя (или отмена):');
                     if (secret === CREATOR_SECRET) {
                         clearBtn.classList.add('show');
                     }
@@ -630,36 +539,41 @@
                     list.innerHTML = '<li class="no-records">Пока нет рекордов.<br>Станьте первым!</li>';
                 }
             } catch (error) {
-                list.innerHTML = '<li class="no-records">Ошибка загрузки рекордов</li>';
+                list.innerHTML = '<li class="no-records">Ошибка загрузки</li>';
                 console.error('Ошибка:', error);
             }
         }
 
         function hideLeaderboard() {
-            const modal = document.getElementById('leaderboardModal');
-            const clearBtn = document.getElementById('clearBtn');
-            modal.classList.remove('show');
-            clearBtn.classList.remove('show');
+            document.getElementById('leaderboardModal').classList.remove('show');
+            document.getElementById('clearBtn').classList.remove('show');
         }
 
         function clearLeaderboard() {
-            const secret = prompt('Введите секретный код создателя для подтверждения:');
+            const secret = prompt('Код создателя для подтверждения:');
             if (secret === CREATOR_SECRET) {
-                if (confirm('⚠️ Удалить ВСЕ рекорды всех игроков? Это действие нельзя отменить!')) {
-                    alert('Для полной очистки откройте Google Таблицу и удалите данные вручную.');
+                if (confirm('⚠️ Удалить ВСЕ рекорды?')) {
+                    alert('Откройте Google Таблицу и удалите данные вручную');
                 }
             } else {
                 alert('Неверный код!');
             }
         }
 
-        document.getElementById('leaderboardModal').addEventListener('click', (e) => {
-            if (e.target.id === 'leaderboardModal') {
-                hideLeaderboard();
-            }
+        // Закрытие модальных окон по клику вне
+        document.querySelectorAll('.modal, .leaderboard-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    if (modal.id === 'leaderboardModal') {
+                        document.getElementById('clearBtn').classList.remove('show');
+                    }
+                }
+            });
         });
 
-        shuffleTable();
+        // Запуск
+        init();
     </script>
 </body>
 </html>
