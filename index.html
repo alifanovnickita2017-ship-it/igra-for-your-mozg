@@ -191,7 +191,27 @@
             pointer-events: none;
         }
         
-        /* Таблица рекордов */
+        .name-input {
+            display: none;
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        body.dark .name-input {
+            background-color: #0f3460;
+            color: #eee;
+            border-color: #e94560;
+        }
+        
+        .name-input.show {
+            display: block;
+        }
+        
         .leaderboard-modal {
             display: none;
             position: fixed;
@@ -297,13 +317,23 @@
             padding: 20px;
         }
         
+        .loading {
+            text-align: center;
+            color: #2196F3;
+            padding: 20px;
+        }
+        
         .clear-btn {
             background-color: #f44336;
             margin-top: 15px;
             width: 100%;
+            display: none;
         }
         
-        /* Адаптация для маленьких экранов */
+        .clear-btn.show {
+            display: block;
+        }
+        
         @media (max-width: 480px) {
             body {
                 padding: 5px;
@@ -370,9 +400,11 @@
         <button id="themeBtn" onclick="toggleTheme()">🌙 Тёмная тема</button>
         <button id="leaderboardBtn" onclick="showLeaderboard()">🏆 Рекорды</button>
     </div>
+    
+    <input type="text" id="nameInput" class="name-input" placeholder="Введите ваше имя для рекорда" maxlength="15">
+    
     <div class="table" id="table"></div>
 
-    <!-- Таблица рекордов -->
     <div class="leaderboard-modal" id="leaderboardModal">
         <div class="leaderboard-content">
             <div class="leaderboard-header">
@@ -380,13 +412,15 @@
                 <button class="close-btn" onclick="hideLeaderboard()">✕ Закрыть</button>
             </div>
             <ul class="leaderboard-list" id="leaderboardList">
-                <!-- Сюда добавляются рекорды -->
             </ul>
-            <button class="clear-btn" onclick="clearLeaderboard()">🗑️ Очистить рекорды</button>
+            <button class="clear-btn" id="clearBtn" onclick="clearLeaderboard()">🗑️ Очистить все рекорды</button>
         </div>
     </div>
 
     <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRMK4EeoCf7Vj-pJlXpwpYVRe8nZoDpJ3hPSlbLlrHMUJNuSxibUZ8pUM3ds9-F23bkQ/exec';
+        const CREATOR_SECRET = 'admin2024';
+        
         let numbers = [];
         let currentTarget = 1;
         let timeLeft = 30;
@@ -394,8 +428,8 @@
         let gameActive = false;
         let startTime = null;
         let elapsedTime = 0;
+        let pendingRecord = null;
 
-        // Загрузка сохранённой темы
         if (localStorage.getItem('darkTheme') === 'true') {
             document.body.classList.add('dark');
             document.getElementById('themeBtn').textContent = '☀️ Светлая тема';
@@ -497,11 +531,8 @@
                 
                 if (currentTarget > 30) {
                     stopTimer();
-                    const finalTime = elapsedTime;
-                    saveRecord(finalTime);
-                    setTimeout(() => {
-                        alert(`🎉 Поздравляю! Вы нашли все числа за ${finalTime} секунд!`);
-                    }, 300);
+                    pendingRecord = elapsedTime;
+                    showNameInput();
                 }
             } else {
                 cell.classList.add('wrong');
@@ -528,64 +559,100 @@
             document.getElementById('themeBtn').textContent = isDark ? '☀️ Светлая тема' : '🌙 Тёмная тема';
         }
 
-        // ===== ТАБЛИЦА РЕКОРДОВ =====
-        
-        function getRecords() {
-            const records = localStorage.getItem('gameRecords');
-            return records ? JSON.parse(records) : [];
+        function showNameInput() {
+            const input = document.getElementById('nameInput');
+            input.classList.add('show');
+            input.focus();
+            
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    saveRecordToGoogle();
+                }
+            };
+            
+            setTimeout(() => {
+                if (input.classList.contains('show')) {
+                    const name = input.value.trim() || 'Аноним';
+                    saveRecordToGoogle(name);
+                }
+            }, 10000);
         }
 
-        function saveRecord(time) {
-            const records = getRecords();
-            const date = new Date().toLocaleDateString('ru-RU');
-            records.push({ time, date });
+        function saveRecordToGoogle(name = null) {
+            const input = document.getElementById('nameInput');
+            const playerName = name || input.value.trim() || 'Аноним';
             
-            // Сортируем по времени (лучшие первыми)
-            records.sort((a, b) => a.time - b.time);
+            input.classList.remove('show');
+            input.value = '';
             
-            // Храним только топ-10
-            records.splice(10);
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `time=${pendingRecord}&name=${encodeURIComponent(playerName)}`
+            }).catch(err => console.error('Ошибка:', err));
             
-            localStorage.setItem('gameRecords', JSON.stringify(records));
+            pendingRecord = null;
         }
 
-        function showLeaderboard() {
+        async function showLeaderboard() {
             const modal = document.getElementById('leaderboardModal');
             const list = document.getElementById('leaderboardList');
-            const records = getRecords();
+            const clearBtn = document.getElementById('clearBtn');
             
-            list.innerHTML = '';
-            
-            if (records.length === 0) {
-                list.innerHTML = '<li class="no-records">Пока нет рекордов.<br>Пройдите игру!</li>';
-            } else {
-                records.forEach((record, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'leaderboard-item';
-                    li.innerHTML = `
-                        <span><span class="leaderboard-rank">#${index + 1}</span> ${record.date}</span>
-                        <span class="leaderboard-time">${record.time} сек</span>
-                    `;
-                    list.appendChild(li);
-                });
-            }
-            
+            list.innerHTML = '<li class="loading">Загрузка рекордов...</li>';
             modal.classList.add('show');
+            clearBtn.classList.remove('show');
+            
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                
+                if (data.result === 'success' && data.records && data.records.length > 0) {
+                    list.innerHTML = '';
+                    data.records.forEach((record, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'leaderboard-item';
+                        li.innerHTML = `
+                            <span><span class="leaderboard-rank">#${index + 1}</span> ${record.name || 'Аноним'}</span>
+                            <span class="leaderboard-time">${record.time} сек</span>
+                        `;
+                        list.appendChild(li);
+                    });
+                    
+                    const secret = prompt('Введите секретный код создателя (или отмена):');
+                    if (secret === CREATOR_SECRET) {
+                        clearBtn.classList.add('show');
+                    }
+                } else {
+                    list.innerHTML = '<li class="no-records">Пока нет рекордов.<br>Станьте первым!</li>';
+                }
+            } catch (error) {
+                list.innerHTML = '<li class="no-records">Ошибка загрузки рекордов</li>';
+                console.error('Ошибка:', error);
+            }
         }
 
         function hideLeaderboard() {
             const modal = document.getElementById('leaderboardModal');
+            const clearBtn = document.getElementById('clearBtn');
             modal.classList.remove('show');
+            clearBtn.classList.remove('show');
         }
 
         function clearLeaderboard() {
-            if (confirm('Удалить все рекорды?')) {
-                localStorage.removeItem('gameRecords');
-                showLeaderboard();
+            const secret = prompt('Введите секретный код создателя для подтверждения:');
+            if (secret === CREATOR_SECRET) {
+                if (confirm('⚠️ Удалить ВСЕ рекорды всех игроков? Это действие нельзя отменить!')) {
+                    alert('Для полной очистки откройте Google Таблицу и удалите данные вручную.');
+                }
+            } else {
+                alert('Неверный код!');
             }
         }
 
-        // Закрытие по клику вне окна
         document.getElementById('leaderboardModal').addEventListener('click', (e) => {
             if (e.target.id === 'leaderboardModal') {
                 hideLeaderboard();
