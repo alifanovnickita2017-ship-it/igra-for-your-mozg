@@ -414,9 +414,8 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `time=${time}&name=${encodeURIComponent(playerNickname)}`
                 });
-                console.log('✅ Отправлено в Google Sheets');
             } catch (err) {
-                console.warn('⚠️ Не удалось отправить в Google:', err);
+                console.warn('Не удалось отправить в Google:', err);
             }
         }
         
@@ -432,12 +431,12 @@
             const modal = document.getElementById('leaderboardModal');
             const list = document.getElementById('leaderboardList');
             
-            list.innerHTML = '<li class="loading">Загрузка рекордов...</li>';
+            list.innerHTML = '<li class="loading">Загрузка...</li>';
             modal.classList.add('show');
             
             let records = [];
-            let usedGoogle = false;
             
+            // Пытаемся загрузить из Google
             try {
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 5000);
@@ -446,16 +445,17 @@
                 const data = await response.json();
                 if (data.result === 'success' && data.records?.length > 0) {
                     records = data.records.map(r => ({ name: r.name || 'Аноним', time: parseFloat(r.time) }));
-                    usedGoogle = true;
                 }
             } catch (error) {
-                console.warn('⚠️ Не удалось загрузить из Google:', error);
+                console.warn('Google не доступен, используем локальные:', error);
             }
             
-            if (!usedGoogle || records.length === 0) {
+            // Если Google не сработал — берём локальные
+            if (records.length === 0) {
                 records = getLocalRecords();
             }
             
+            // Группируем: для каждого ника только лучший результат
             const bestRecords = {};
             records.forEach(r => {
                 const name = r.name || 'Аноним';
@@ -465,6 +465,7 @@
                 }
             });
             
+            // Сортируем и показываем
             const sorted = Object.values(bestRecords).sort((a, b) => a.time - b.time).slice(0, 50);
             
             if (sorted.length > 0) {
@@ -484,6 +485,8 @@
             } else {
                 list.innerHTML = '<li class="no-records">Пока нет рекордов.<br>Станьте первым!</li>';
             }
+            
+            // ⚠️ ВАЖНО: Никакого prompt() здесь! Кнопка очистки просто видна
         }
         
         function getLocalRecords() {
@@ -504,6 +507,7 @@
         }
 
         function clearLeaderboard() {
+            // ⚠️ ВОТ ЗДЕСЬ спрашиваем код - только при нажатии на очистку!
             const secret = prompt('🔐 Введите код создателя:');
             if (secret === CREATOR_SECRET) {
                 if (confirm('⚠️ Удалить ВСЕ рекорды?')) {
